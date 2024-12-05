@@ -13,3 +13,4 @@ variable "availability_zones" {
     description = "availability zones"
     type        = list(string)
 }
+

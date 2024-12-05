@@ -36,14 +36,16 @@ resource "aws_route_table_association" "subnets" {
 
 }
 
-resource "aws_security_group" "main" {
-  name        = "main"
+resource "aws_security_group" "main" { 
+  count       = 2
+  name        = count.index == 0 ? "public" : "private"
   description = "Allow ssh access"
   vpc_id      = aws_vpc.main.id
 }
 
 resource "aws_vpc_security_group_egress_rule" "main" {
-  security_group_id = aws_security_group.main.id
+  count             = 2
+  security_group_id = aws_security_group.main[count.index].id
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
   tags = {
@@ -52,7 +54,7 @@ resource "aws_vpc_security_group_egress_rule" "main" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "outside" {
-  security_group_id = aws_security_group.main.id
+  security_group_id = aws_security_group.main[0].id
   ip_protocol       = "tcp"
   from_port         = 22
   to_port           = 22
@@ -63,7 +65,7 @@ resource "aws_vpc_security_group_ingress_rule" "outside" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "inside" {
-  security_group_id = aws_security_group.main.id
+  security_group_id = aws_security_group.main[1].id
   ip_protocol       = "-1"
   cidr_ipv4         = aws_vpc.main.cidr_block
   tags = {
