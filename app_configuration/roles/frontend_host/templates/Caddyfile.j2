@@ -1,6 +1,6 @@
 :80 {
   handle_path /chat/* {
-    reverse_proxy {{hostvars['lab13_backend_b1'].private_ip_address}}
+    reverse_proxy {{hostvars['b01'].private_ip_address}}
   }
 
   handle {
@@ -8,4 +8,5 @@
     file_server {
       index index.html
     }
+  }
 }

@@ -8,7 +8,7 @@ module "network" {
 
 module "ec2" {
   source       = "./modules/ec2"
-  ami          = "ami-03839f1dba75bb628"
+  ami          = "ami-0058f736afded77b3"
   instance_type= "t2.micro"
   subnet_ids   = module.network.subnet_ids
   security_groups = module.network.security_groups

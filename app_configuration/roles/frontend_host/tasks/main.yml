@@ -1,13 +1,47 @@
-- name: Install required packages
+- name: install caddy requirements
+  ansible.builtin.package:
+    name: "{{ item }}" 
+    state: latest
+    update_cache: true
+  loop:
+    - debian-keyring
+    - debian-archive-keyring 
+    - apt-transport-https 
+    - curl
   become: true
-  apt:
-    name:
-      - caddy
-    state: present
-    update_cache: yes
+
+- name: get caddy keyring and repo info
+  ansible.builtin.get_url: 
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: u=rwx,g=rwx,o=rwx
+  loop:
+    - url: https://dl.cloudsmith.io/public/caddy/stable/gpg.key 
+      dest: /tmp/caddy_gpg.key
+    - url: https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt 
+      dest: /tmp/caddy_debian.deb.txt
+  become: true
+
+- name: install caddy keyring and repo listing
+  ansible.builtin.shell: |
+    cat /tmp/caddy_gpg.key | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    cat /tmp/caddy_debian.deb.txt | tee /etc/apt/sources.list.d/caddy-stable.list
+  args:
+    creates: /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  become: true
+
+- name: install caddy package
+  ansible.builtin.package:
+    name: "{{ item }}" 
+    state: latest
+    update_cache: true
+  loop:
+    - caddy
+  become: true
 
 
-- name: Ensure /var/www/html directory exists
+
+- name: Create /var/www/html directory
   become: true
   ansible.builtin.file:
     path: /var/www/html
@@ -26,14 +60,24 @@
     mode: '0664'
 
 - name: Copy client.js to /var/www/html
+  become: true
   ansible.builtin.copy:
     src: files/client.js
     dest: /var/www/html/client.js
     owner: caddy
     group: caddy
     mode: '0664'
-
+    
+- name: Configure caddy by the template2
+  become: true
+  ansible.builtin.template:
+    src: ../templates/config.js.j2
+    dest: /var/www/html/config.js
+    owner: root
+    group: caddy
+    mode: '0644'
 - name: Configure caddy by the template
+  become: true
   ansible.builtin.template:
     src: ../templates/Caddyfile.j2
     dest: /etc/caddy/Caddyfile

@@ -53,7 +53,7 @@ resource "aws_vpc_security_group_egress_rule" "main" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "outside" {
+resource "aws_vpc_security_group_ingress_rule" "p_ssh" {
   security_group_id = aws_security_group.main[0].id
   ip_protocol       = "tcp"
   from_port         = 22
@@ -64,7 +64,38 @@ resource "aws_vpc_security_group_ingress_rule" "outside" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "inside" {
+resource "aws_vpc_security_group_ingress_rule" "p_http" {
+  security_group_id = aws_security_group.main[0].id
+  ip_protocol       = "tcp"
+  from_port         = 80
+  to_port           = 80
+  cidr_ipv4         = "0.0.0.0/0"
+  tags = {
+    Name = "main"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "p_all" {
+  security_group_id = aws_security_group.main[0].id
+  ip_protocol       = "-1"
+  cidr_ipv4         = aws_vpc.main.cidr_block
+  tags = {
+    Name = "main"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "b_ssh" {
+  security_group_id = aws_security_group.main[1].id
+  ip_protocol       = "tcp"
+  from_port         = 22
+  to_port           = 22
+  cidr_ipv4         = "0.0.0.0/0"
+  tags = {
+    Name = "main"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "b_all" {
   security_group_id = aws_security_group.main[1].id
   ip_protocol       = "-1"
   cidr_ipv4         = aws_vpc.main.cidr_block
